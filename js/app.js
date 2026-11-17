@@ -3,7 +3,7 @@ import {
   setAppPassword, hasPassword, importCollection, saveAccountSettings, describe,
 } from './store.js';
 import { settings, saveSettings, DEFAULT_MODEL } from './settings.js';
-import { localPass, askGemini, listModels } from './agent.js';
+import { localPass, askGemini, listModels, testTavily } from './agent.js';
 import {
   STATUSES, STATUS_LABEL, STATUS_LONG, esc, slugify, uniqueId, norm, findMatches,
   resizeImage, blobToB64, exportMarkdown, download, today, nowIso, debounce,
@@ -24,6 +24,7 @@ const items = () => col().items || [];
 const notes = () => store.data.notes.notes || [];
 const aliases = () => col().meta?.aliases || {};
 const findItem = (id) => items().find((i) => i.id === id);
+const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 const safeUrl = (u) => (/^https?:\/\//i.test(u || '') ? u : '#');
 
 const ICON = {
@@ -76,7 +77,7 @@ function gateHtml() {
   if (!s.authReady) return '<section class="gate"><p class="empty">Loading…</p></section>';
   if (!store.user) {
     return `<section class="gate">
-      <img src="icons/icon.svg" alt="" width="64" height="64">
+      <img src="icons/logo.png" alt="" width="72" height="72">
       <h2>Your Eevee collection</h2>
       <p>Sign in to see and update your list. It’s private to your account.</p>
       <button class="btn primary" type="button" data-act="signin">Sign in with Google</button>
@@ -648,6 +649,7 @@ function resultHtml(res, run, ctx) {
       <h4>${esc(c.name)}</h4>
       <p class="meta">${verdict}<span>${[c.brand, c.series, c.price].filter(Boolean).map(esc).join(' · ')}</span></p>
       ${c.evidence ? `<p class="ev">${esc(c.evidence)}</p>` : ''}
+      ${c.sources?.length ? `<p class="ev">Seen on: ${c.sources.slice(0, 3).map((s) => `<a href="${esc(safeUrl(s.uri))}" target="_blank" rel="noopener">${esc(hostOf(s.uri))}</a>`).join(', ')}</p>` : ''}
       <div class="acts">${acts}</div>
       ${keepable && !tracked && !ctx.verifyId ? `<label class="keep"><input type="checkbox" checked data-keep>Use the photo as the item photo</label>` : ''}
     </div>`;
@@ -659,7 +661,7 @@ function resultHtml(res, run, ctx) {
   }).join('');
   const sources = res.sources.length
     ? `<div class="sources">Sources found (${res.sources.length}):<ol>${res.sources.slice(0, 10).map((s) => `<li><a href="${esc(safeUrl(s.uri))}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join('')}</ol></div>`
-    : '<p class="hint">No web results came back, so nothing here counts as confirmed.</p>';
+    : `<p class="hint">${esc(res.searchNote || 'No web results came back, so nothing here counts as confirmed.')}</p>`;
   return `${paras}${cands}${moves}${sources}${res.searchHtml ? '<div class="suggest"></div>' : ''}`;
 }
 
@@ -760,6 +762,8 @@ $('#agent-attach').addEventListener('click', (e) => { if (e.target.closest('[dat
 function openSettings() {
   const f = $('#settings-form');
   f.geminiKey.value = settings.geminiKey || '';
+  f.tavilyKey.value = settings.tavilyKey || '';
+  $('#tavily-out').textContent = '';
   f.model.value = settings.model || DEFAULT_MODEL;
   f.newPassword.value = '';
   $('#account-email').textContent = store.user ? store.user.email || 'Signed in' : 'Not signed in';
@@ -774,7 +778,7 @@ function openSettings() {
 $('#settings-form').addEventListener('submit', (e) => {
   e.preventDefault();
   const f = $('#settings-form');
-  saveAccountSettings({ geminiKey: f.geminiKey.value.trim(), model: f.model.value.trim() || DEFAULT_MODEL });
+  saveAccountSettings({ geminiKey: f.geminiKey.value.trim(), tavilyKey: f.tavilyKey.value.trim(), model: f.model.value.trim() || DEFAULT_MODEL });
   $('#dlg-settings').close();
   toast(store.user ? 'Settings saved to your account' : 'Settings saved on this device');
   renderSync();
@@ -802,6 +806,14 @@ $('#load-models').onclick = async () => {
     $('#models').innerHTML = models.map((m) => `<option value="${esc(m)}">`).join('');
     out.textContent = `✓ Key works. ${models.length} models available${models.includes(DEFAULT_MODEL) ? ` (includes ${DEFAULT_MODEL})` : ''}.`;
   } catch (err) { out.textContent = `Failed: ${err.message}`; }
+};
+$('#test-tavily').onclick = async () => {
+  const out = $('#tavily-out');
+  const key = $('#settings-form').tavilyKey.value.trim();
+  if (!key) { out.textContent = 'Enter the Tavily key first.'; return; }
+  out.textContent = 'Checking…';
+  try { await testTavily(key); out.textContent = '✓ Search works (used 1 of your free searches).'; }
+  catch (err) { out.textContent = err.message; }
 };
 $('#import-json').onclick = () => { if (store.user) pickImport(); else toast('Sign in first.'); };
 $('#export-md').onclick = () => download(`eevee-figure-collection-${today()}.md`, exportMarkdown(col()), 'text/markdown');

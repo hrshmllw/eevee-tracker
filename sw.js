@@ -2,14 +2,14 @@
 // Firestore itself (IndexedDB), so they're not handled here.
 // The shell is network-first, so deploys show up on the next open. Bump VERSION when the list of
 // SHELL_FILES changes (or to force-refresh the offline copy).
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL = `shell-${VERSION}`;
 const LIBS = 'libs';
 const FIREBASE = 'https://www.gstatic.com/firebasejs/11.10.0/';
 const SHELL_FILES = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'js/app.js', 'js/store.js', 'js/firebase-config.js', 'js/agent.js', 'js/settings.js', 'js/util.js',
-  'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
+  'favicon.ico', 'icons/favicon-32.png', 'icons/logo.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (e) => {

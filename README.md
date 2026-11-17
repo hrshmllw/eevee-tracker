@@ -6,7 +6,7 @@ A personal Eevee collectibles tracker (owned, incoming, wishlist). It installs a
 - **Data:** Google Firestore on the free Spark plan (no card). It's private to your Google account. Items, notes, photos and your Gemini key live under `users/{your uid}/` and sync across your devices.
 - **Sign-in:** Google. An optional email and password gets you into the same account where Google sign-in won't open.
 - **Photos:** resized in the browser to about 800 px JPEG (~100–150 KB) and stored in Firestore. 1 GB of free space is roughly 7,000 photos.
-- **AI:** Google Gemini (free API key) with Google Search grounding.
+- **AI:** Google Gemini (free key, `gemini-3.5-flash`) plans the searches and judges the results; **Tavily** (free key, 1,000 searches a month, no card) runs the web searches and reads links you paste.
 - **Notes:** a quick-capture inbox for when the AI is out of quota. You can process notes with AI later, or convert them by hand.
 
 ## One-time Firebase setup (about 5 minutes)
@@ -25,7 +25,7 @@ Do this signed in to your **personal** Google account at <https://console.fireba
    - These values are meant to be public. What protects your data is sign-in plus the rules.
 6. **First sign-in.**
    - Open <https://hrshmllw.github.io/eevee-tracker/> → *Sign in with Google*. The empty account offers **Import**; pick `data/collection.json` (kept locally, not in the repo).
-   - Then go to ⚙ Settings, paste your Gemini key (<https://aistudio.google.com/apikey>) and Save. The key is saved to your account, so other devices pick it up.
+   - Then go to ⚙ Settings and paste your Gemini key (<https://aistudio.google.com/apikey>) and Tavily key (<https://app.tavily.com>). Tap **Load models** and **Test search** to check them, then Save. The keys are saved to your account, so other devices pick them up.
 
 ### Installing the app
 - **Desktop (Chrome/Edge):** use the install icon in the address bar, or Settings → *Install app*.
@@ -42,7 +42,8 @@ Do this signed in to your **personal** Google account at <https://console.fireba
   - `is LDCX Blowing Light a real series?`
   - `MonColle Box Vol. 7 arrived` is matched locally with no AI call, and you confirm the move.
 - **Verdicts:** ✓ Confirmed (a real shop or official page names it), ≈ Likely, ✕ Not found.
-  - Sources come from Google's search results, never from links the AI wrote itself.
+  - Sources are the Tavily search results the answer cites, never links the AI wrote itself. "Confirmed" requires at least one cited result.
+  - Paste a shop or official link with your message and it reads that page too.
   - Nothing is added until you tap a button.
 - **Out of quota?** The error offers *Save as note*. You can also tap **Note** at any time. Later, the Notes tab has **Process with AI** (one or all), **Convert** (manual add form, pre-filled), or a one-tap "Mark X Owned" when it recognises the item.
 - **Offline:** your list and photos you've already viewed still load. Changes and notes are saved on the device and sync when you're back online. The pill at the top right shows the sync state.
@@ -51,11 +52,12 @@ Do this signed in to your **personal** Google account at <https://console.fireba
 ## Free limits (checked Nov 2026)
 - **Firestore (Spark):** 1 GiB stored, 50k reads/day, 20k writes/day. That's far more than one collection needs.
   - Any Google account can sign in, but the rules only let it see its own empty space. To lock the database to just you, change the rule to `request.auth.uid == '<your uid>'`.
-- **Gemini free tier:** Google Search grounding is free on `gemini-2.5-flash-lite` / `gemini-2.5-flash`, up to **500 grounded requests a day** (shared). The app defaults to `gemini-2.5-flash-lite`. Limits change, so see <https://aistudio.google.com/rate-limit>.
+- **Gemini free tier:** plain requests are free; each question uses 2 (plan + judge). Google's own Search grounding is *not* free on current models, which is why search goes through Tavily. Older models (`gemini-2.5-*`) aren't offered to new keys. Limits: <https://aistudio.google.com/rate-limit>.
+- **Tavily free plan:** 1,000 searches a month, no card. A question uses 1–3; pasted links use one extract. When it runs out, searches stop until the 1st (no charges).
 
 ## Development
 - Serve the folder over http, e.g. `npx serve` and open `http://localhost:3000/`. Service workers and sign-in need http(s), so opening the file directly won't work.
 - `node scripts/import-md.mjs <list.md>` turns a Markdown list into `data/collection.json`, which you then import in the app. `data/` is git-ignored.
-- `node scripts/make-icons.mjs` regenerates the icons.
+- Icons in `icons/` (plus `favicon.ico`) are made from one square PNG: `logo.png`, `favicon-32.png`, `icon-192/512.png` (transparent circle), and `icon-maskable-512.png` / `apple-touch-icon.png` (on a solid square, no transparency, so iOS and Android crops look right).
 - The Firebase SDK is loaded from gstatic, pinned to 11.10.0 in `js/store.js` and `sw.js`. Keep both in sync.
 - The service worker loads app files network-first, so a push shows up on the next open (the cached copy is only used offline). Bump `VERSION` in `sw.js` when you add or rename app files.

@@ -9,7 +9,8 @@
   <meta name="theme-color" content="#1a140f" media="(prefers-color-scheme: dark)">
   <meta name="color-scheme" content="light dark">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" href="icons/favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,7 +22,7 @@
 <body>
   <header class="top">
     <div class="brand">
-      <img src="icons/icon.svg" alt="" width="34" height="34">
+      <img src="icons/logo.png" alt="" width="34" height="34">
       <h1>Eevee Tracker</h1>
     </div>
     <button id="sync" class="sync" type="button" title="Sync status">
@@ -176,8 +177,12 @@
         <label>API key<input name="geminiKey" type="password" autocomplete="off" placeholder="from aistudio.google.com"></label>
         <label>Model<input name="model" list="models" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
         <datalist id="models"></datalist>
-        <p class="hint">Saved to your account, so your other devices get it when you sign in. Free Google Search grounding currently works on <code>gemini-2.5-flash-lite</code> (500 searches/day).</p>
         <div class="row"><button type="button" class="btn small" id="load-models">Load models</button><span class="hint" id="models-out"></span></div>
+
+        <h3>Tavily (web search)</h3>
+        <label>API key<input name="tavilyKey" type="password" autocomplete="off" placeholder="tvly-… from tavily.com"></label>
+        <div class="row"><button type="button" class="btn small" id="test-tavily">Test search</button><span class="hint" id="tavily-out"></span></div>
+        <p class="hint">Keys are saved to your account, so your other devices get them when you sign in. Free: Gemini <code>gemini-3.5-flash</code> answers, Tavily does up to 1,000 searches a month.</p>
 
         <h3>App</h3>
         <div class="row wrap">

@@ -12,7 +12,7 @@ import {
   setDoc, updateDoc, deleteDoc, getDoc, writeBatch, Bytes,
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.js';
-import { settings, saveSettings } from './settings.js';
+import { settings, saveSettings, fixModel } from './settings.js';
 import { today, nowIso } from './util.js';
 
 export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
@@ -91,7 +91,7 @@ function listen() {
     }, onErr),
     onSnapshot(ref.meta('settings'), (snap) => {
       const s = snap.data();
-      if (s) saveSettings({ geminiKey: s.geminiKey || '', model: s.model || settings.model });
+      if (s) saveSettings({ geminiKey: s.geminiKey || '', tavilyKey: s.tavilyKey || '', model: fixModel(s.model || settings.model) });
     }, onErr),
   ];
 }
@@ -231,7 +231,7 @@ export async function importCollection(json) {
   return itemsIn.length;
 }
 
-/** Save the Gemini key/model to the account so every signed-in device gets it. */
+/** Save the Gemini/Tavily keys and model to the account so every signed-in device gets it. */
 export function saveAccountSettings(patch) {
   saveSettings(patch);
   if (store.user) track(setDoc(ref.meta('settings'), patch, { merge: true }));
