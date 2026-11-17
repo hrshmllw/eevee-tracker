@@ -1,0 +1,1129 @@
+{
+  "updated": "2026-11-16",
+  "meta": {
+    "title": "Eevee Figure Collection",
+    "aliases": {
+      "TTARTS": "Takara Tomy ARTS",
+      "T-ARTS": "Takara Tomy ARTS",
+      "Takara Tomy": "Takara Tomy ARTS",
+      "Zinc.cn": "Langbowang",
+      "Holly Box": "Langbowang",
+      "康师傅": "Master Kong",
+      "PC": "Pokémon Center",
+      "Rement": "Re-Ment",
+      "Re Ment": "Re-Ment",
+      "MonColle": "Moncolle",
+      "伊布": "Eevee",
+      "イーブイ": "Eevee"
+    },
+    "groupOrder": [
+      "Re-Ment",
+      "Jazwares",
+      "LDCX",
+      "Other brands / series",
+      "Takara Tomy ARTS (TTARTS) MonColle",
+      "Pokémon Center Figures"
+    ],
+    "sectionNotes": {
+      "Jazwares": "The Jazwares 2-inch Battle Figure is already owned. Select Battle Figure with Case is treated as part of the same 2-inch Battle Figure line, not a separate wishlist entry.",
+      "Takara Tomy ARTS (TTARTS) MonColle": "MonColle Box Vol. 7 Eevee has been moved to Incoming / Ordered."
+    },
+    "trackerNotes": [
+      "**TTARTS** means Takara Tomy ARTS.",
+      "Keeppley Mini Building Blocks is separate from Keeppley Pokémon Asia.",
+      "Keeppley Pokémon Ice Cream Cone is already owned.",
+      "The owned Funism Twinkmont and the wishlist Funism Twinkmont Gigantamax Eevee are separate entries.",
+      "The incoming TTARTS MonColle Box Vol. 7 is the female heart-tail variant and does not have its original box.",
+      "The Jazwares 2-inch Battle Figure entry represents one figure selected from a five-piece bag. The other four were given away and are not part of this collection count.",
+      "Pokémon Center items are grouped under their own category.",
+      "Master Kong is recorded as the promotional partner/attribution. Meizhou Nuohua is the manufacturer shown on the certificate.",
+      "Some product series names and identifiers are provisional where noted."
+    ]
+  },
+  "items": [
+    {
+      "id": "takara-tomy-arts-ttarts-relaxation-at-home",
+      "name": "Takara Tomy ARTS (TTARTS) Relaxation at Home",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-palm-wonders",
+      "name": "Funism Palm Wonders",
+      "brand": "Funism",
+      "series": "",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-pokemon-plamo-collection-quick-04",
+      "name": "Bandai Pokémon Plamo Collection Quick!! 04",
+      "brand": "Bandai",
+      "series": "Pokémon Plamo Collection",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-twinkmont",
+      "name": "Funism Twinkmont",
+      "brand": "Funism",
+      "series": "",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "keeppley-pokemon-asia",
+      "name": "Keeppley Pokémon Asia",
+      "brand": "Keeppley",
+      "series": "",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "keeppley-pokemon-ice-cream-cone",
+      "name": "Keeppley Pokémon Ice Cream Cone",
+      "brand": "Keeppley",
+      "series": "",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "jazwares-pokemon-2-inch-battle-figure",
+      "name": "Jazwares Pokémon 2-inch Battle Figure",
+      "brand": "Jazwares",
+      "series": "",
+      "group": "",
+      "status": "owned",
+      "price": "",
+      "notes": [
+        "Selected one Eevee from a five-piece Eevee bag.",
+        "The other four were given to the user's daughter.",
+        "Exact pose/variant not identified."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "langbowang-starry-dream",
+      "name": "Langbowang Starry Dream",
+      "brand": "Langbowang",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "langbowang-four-seasons",
+      "name": "Langbowang Four Seasons",
+      "brand": "Langbowang",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "langbowang-zinc-cn-glow-in-the-dark-poke-ball",
+      "name": "Langbowang / Zinc.cn Glow-in-the-Dark Poké Ball",
+      "brand": "Langbowang / Zinc.cn",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-adventure",
+      "name": "Funism Adventure!",
+      "brand": "Funism",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-let-s-go",
+      "name": "Funism Let's Go!",
+      "brand": "Funism",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-enjoy",
+      "name": "Funism Enjoy!",
+      "brand": "Funism",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "lego-eevee",
+      "name": "LEGO Eevee",
+      "brand": "LEGO",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "sunny-sandy-stamp",
+      "name": "Sunny & Sandy Stamp",
+      "brand": "Sunny & Sandy",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-gemries",
+      "name": "Bandai Gemries",
+      "brand": "Bandai",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-pokemon-plamo-collection-quick-07",
+      "name": "Bandai Pokémon Plamo Collection Quick!! 07",
+      "brand": "Bandai",
+      "series": "Pokémon Plamo Collection",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-look-at-my-tail",
+      "name": "Bandai Look at My Tail",
+      "brand": "Bandai",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-bikkura-tamago-2021-figure",
+      "name": "Bandai Bikkura Tamago 2021 Figure",
+      "brand": "Bandai",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-figure-x-clip-2",
+      "name": "Bandai Figure x Clip 2",
+      "brand": "Bandai",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "takara-tomy-arts-ttarts-katazun",
+      "name": "Takara Tomy ARTS (TTARTS) Katazun",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "takara-tomy-arts-ttarts-mapuku-pakupaku",
+      "name": "Takara Tomy ARTS (TTARTS) Mapuku Pakupaku",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "keeppley-mini-building-blocks",
+      "name": "Keeppley Mini Building Blocks",
+      "brand": "Keeppley",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "keeppley-planet-series",
+      "name": "Keeppley Planet Series",
+      "brand": "Keeppley",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "keeppley-baking-time-building-blocks",
+      "name": "Keeppley Baking Time Building Blocks",
+      "brand": "Keeppley",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "keeppley-pokemon-battle-building-blocks",
+      "name": "Keeppley Pokémon Battle! Building Blocks",
+      "brand": "Keeppley",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "blokees-pokemon-classic-edition-s",
+      "name": "Blokees Pokémon Classic Edition S",
+      "brand": "Blokees",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "holly-box-sleepy-eevee",
+      "name": "Holly Box Sleepy Eevee",
+      "brand": "Holly Box",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-tcg-china-eevee-keychain",
+      "name": "Pokémon TCG China Eevee Keychain",
+      "brand": "Pokémon TCG China",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "wicked-cool-toys-pokemon-quest-series-1",
+      "name": "Wicked Cool Toys Pokémon Quest Series 1",
+      "brand": "Wicked Cool Toys",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "takara-tomy-arts-ttarts-moncolle-box-vol-7-eevee",
+      "name": "Takara Tomy ARTS (TTARTS) MonColle Box Vol. 7 Eevee",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [
+        "Confirmed female variant with heart-shaped tail.",
+        "Ordered without the original box."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-prime-figure-eevee",
+      "name": "Funism Prime Figure: Eevee",
+      "brand": "Funism",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "₱700",
+      "notes": [
+        "Ordered for approximately ₱700.",
+        "Box is damaged; user is comfortable with this.",
+        "Figure condition to be checked on arrival."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "master-kong-pokemon-promotional-eevee-figure-season-2-grand-",
+      "name": "Master Kong × Pokémon promotional Eevee figure (Season 2 Grand Prize; listing description)",
+      "brand": "Master Kong (promo)",
+      "series": "",
+      "group": "",
+      "status": "ordered",
+      "price": "",
+      "notes": [
+        "Master Kong (康师傅) is the promotional/campaign attribution, not the confirmed manufacturer.",
+        "Product name on certificate: 康师傅｜宝可梦公仔 (Master Kong | Pokémon figure).",
+        "Manufacturer: Meizhou Nuohua Industrial Co., Ltd. (梅州市诺华实业有限公司).",
+        "Distributor: Shenzhen Junfei Industrial Co., Ltd. (深圳市骏飞实业有限公司).",
+        "Model: KSFYP202309060827.",
+        "Production date: March 2024.",
+        "Origin: Meizhou, Guangdong, China.",
+        "Figure material: PVC; base material: ABS.",
+        "Package dimensions: 7.5 × 7.5 × 10 cm.",
+        "Batch number: 025240315.",
+        "Age marking: 14+.",
+        "Exact campaign prize title is based on the seller's listing and has not been independently verified."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "provisional",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "re-ment-pokemon-desq-relaxing-home",
+      "name": "Re-Ment Pokémon DesQ Relaxing Home!",
+      "brand": "Re-Ment",
+      "series": "",
+      "group": "Re-Ment",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "jazwares-pokemon-select-vinyl-figure-4-inch",
+      "name": "Jazwares Pokémon Select Vinyl Figure (4-inch)",
+      "brand": "Jazwares",
+      "series": "",
+      "group": "Jazwares",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "jazwares-pokemon-select-deluxe-vinyl-figure-8-inch",
+      "name": "Jazwares Pokémon Select Deluxe Vinyl Figure (8-inch)",
+      "brand": "Jazwares",
+      "series": "",
+      "group": "Jazwares",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "jazwares-my-partner-eevee",
+      "name": "Jazwares My Partner Eevee",
+      "brand": "Jazwares",
+      "series": "",
+      "group": "Jazwares",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "ldcx-blowing-light-series-eevee",
+      "name": "LDCX Blowing Light Series Eevee",
+      "brand": "LDCX",
+      "series": "",
+      "group": "LDCX",
+      "status": "wishlist",
+      "price": "",
+      "notes": [
+        "Series naming is provisional."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "provisional",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "ldcx-assembly-figure-eevee",
+      "name": "LDCX Assembly Figure Eevee",
+      "brand": "LDCX",
+      "series": "",
+      "group": "LDCX",
+      "status": "wishlist",
+      "price": "",
+      "notes": [
+        "LDCX branding is based on the product packaging/listing. Poké Ball inclusion has not been conclusively verified."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "provisional",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-tcg-china-dream-painting",
+      "name": "Pokémon TCG China Dream Painting",
+      "brand": "Pokémon TCG China",
+      "series": "",
+      "group": "Other brands / series",
+      "status": "wishlist",
+      "price": "",
+      "notes": [
+        "Exact series/volume identifier is uncertain."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "provisional",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "langbowang-holly-box-grassland-style",
+      "name": "Langbowang / Holly Box Grassland Style",
+      "brand": "Langbowang / Holly Box",
+      "series": "",
+      "group": "Other brands / series",
+      "status": "wishlist",
+      "price": "",
+      "notes": [
+        "Zinc.cn may also be credited on packaging."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "bandai-pokemon-plamo-collection-42-select-series-eevee",
+      "name": "Bandai Pokémon Plamo Collection 42: Select Series Eevee",
+      "brand": "Bandai",
+      "series": "Pokémon Plamo Collection",
+      "group": "Other brands / series",
+      "status": "wishlist",
+      "price": "",
+      "notes": [
+        "Standard Select Series kit, not a Quick!! kit."
+      ],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "sentinel-polygo",
+      "name": "Sentinel Polygo",
+      "brand": "Sentinel",
+      "series": "",
+      "group": "Other brands / series",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "megahouse-look-up-eevee",
+      "name": "MegaHouse Look Up Eevee",
+      "brand": "MegaHouse",
+      "series": "",
+      "group": "Other brands / series",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "funism-twinkmont-gigantamax-eevee",
+      "name": "Funism Twinkmont Gigantamax Eevee",
+      "brand": "Funism",
+      "series": "",
+      "group": "Other brands / series",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "moncolle-ms-02-eevee",
+      "name": "MonColle MS-02 Eevee",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "MonColle",
+      "group": "Takara Tomy ARTS (TTARTS) MonColle",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "moncolle-emc-09-eevee",
+      "name": "MonColle EMC-09 Eevee",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "MonColle",
+      "group": "Takara Tomy ARTS (TTARTS) MonColle",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "moncolle-mc-029-eevee",
+      "name": "MonColle MC-029 Eevee",
+      "brand": "Takara Tomy ARTS (TTARTS)",
+      "series": "MonColle",
+      "group": "Takara Tomy ARTS (TTARTS) MonColle",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-evolving-personalities-afternoon-picnic-with-",
+      "name": "Pokémon Center Evolving Personalities: Afternoon Picnic with Eevee",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-celebrations-of-seasons-spring",
+      "name": "Pokémon Center Celebrations of Seasons: Spring",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-celebrations-of-seasons-summer",
+      "name": "Pokémon Center Celebrations of Seasons: Summer",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-celebrations-of-seasons-autumn",
+      "name": "Pokémon Center Celebrations of Seasons: Autumn",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-celebrations-of-seasons-winter",
+      "name": "Pokémon Center Celebrations of Seasons: Winter",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-graduation-pikachu-eevee-2024-eevee-figure",
+      "name": "Pokémon Center Graduation Pikachu & Eevee 2024: Eevee Figure",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    },
+    {
+      "id": "pokemon-center-delicious-adventure-eevee-all-packed-figure",
+      "name": "Pokémon Center Delicious Adventure: Eevee All Packed Figure",
+      "brand": "Pokémon Center",
+      "series": "",
+      "group": "Pokémon Center Figures",
+      "status": "wishlist",
+      "price": "",
+      "notes": [],
+      "links": [
+        {
+          "label": "Official Pokémon Center product page",
+          "url": "https://www.pokemoncenter.com/product/703E10142/pokemon-delicious-adventure-eevee-all-packed-figure"
+        }
+      ],
+      "photos": [],
+      "verification": {
+        "status": "unchecked",
+        "sources": [],
+        "checkedAt": null
+      },
+      "added": "2026-11-16",
+      "statusChanged": null
+    }
+  ]
+}

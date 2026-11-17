@@ -1,0 +1,21 @@
+{
+  "name": "Eevee Tracker",
+  "short_name": "Eevee",
+  "description": "Personal Eevee collectibles tracker with an AI assistant that checks items are real.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f7efe2",
+  "theme_color": "#9a5f30",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Quick note", "url": "./?action=note" },
+    { "name": "Ask AI", "url": "./?action=ask" }
+  ]
+}

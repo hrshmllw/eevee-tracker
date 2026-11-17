@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Eevee Tracker</title>
+  <meta name="description" content="Personal Eevee collectibles tracker: owned, incoming and wishlist, with an AI assistant that checks items are real.">
+  <meta name="theme-color" content="#f7efe2" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1a140f" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Eevee">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="icons/icon.svg" alt="" width="34" height="34">
+      <h1>Eevee Tracker</h1>
+    </div>
+    <button id="sync" class="sync" type="button" title="Sync status">
+      <span class="dot" aria-hidden="true"></span><span class="label">Loading…</span>
+    </button>
+    <button id="btn-settings" class="icon-btn" type="button" aria-label="Settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+    </button>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <section class="stats" id="stats" aria-label="Totals"></section>
+
+  <nav class="toolbar" aria-label="Filters">
+    <div class="chips" id="chips"></div>
+    <div class="tools">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="q" placeholder="Search name, brand, notes" autocomplete="off">
+      </label>
+      <select id="groupBy" aria-label="Group by">
+        <option value="status">Group: status</option>
+        <option value="brand">Group: brand</option>
+        <option value="none">No grouping</option>
+      </select>
+      <select id="sort" aria-label="Sort">
+        <option value="list">List order</option>
+        <option value="name">Name A–Z</option>
+        <option value="recent">Recently changed</option>
+      </select>
+    </div>
+  </nav>
+
+  <main id="list" class="list" aria-live="polite"></main>
+
+  <div class="dock">
+    <button id="btn-add" class="btn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add
+    </button>
+    <button id="btn-note" class="btn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5M8 13h8M8 17h5"/></svg>Note
+    </button>
+    <button id="btn-ask" class="btn primary" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>Ask AI
+    </button>
+  </div>
+
+  <!-- Add / edit item -->
+  <dialog id="dlg-item" class="sheet">
+    <form id="item-form" novalidate>
+      <header><h2 id="item-title">Add item</h2><button type="button" class="icon-btn" data-close aria-label="Close">✕</button></header>
+      <div class="body">
+        <label>Name<input name="name" required placeholder="e.g. Funism Prime Figure: Eevee"></label>
+        <div class="grid2">
+          <label>Brand<input name="brand" list="brands" placeholder="Funism"></label>
+          <label>Series<input name="series" placeholder="optional"></label>
+        </div>
+        <div class="grid2">
+          <label>Status
+            <select name="status"><option value="wishlist">Wishlist</option><option value="ordered">Incoming / Ordered</option><option value="owned">Owned</option></select>
+          </label>
+          <label>Price<input name="price" placeholder="₱700" inputmode="decimal"></label>
+        </div>
+        <label>Wishlist group<input name="group" list="groups" placeholder="Other brands / series"></label>
+        <label>Notes<textarea name="notes" rows="4" placeholder="One note per line"></textarea></label>
+        <label>Links<textarea name="links" rows="2" placeholder="One per line: Label | https://…"></textarea></label>
+        <div class="field">
+          <span class="field-label">Photos</span>
+          <div id="item-photos" class="photo-row"></div>
+          <label class="btn small"><input type="file" id="item-photo-input" accept="image/*" multiple hidden>Add photo</label>
+        </div>
+        <p class="hint" id="item-verif"></p>
+      </div>
+      <footer>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </footer>
+    </form>
+  </dialog>
+  <datalist id="brands"></datalist>
+  <datalist id="groups"></datalist>
+
+  <!-- Quick note -->
+  <dialog id="dlg-note" class="sheet">
+    <form id="note-form" novalidate>
+      <header><h2>Quick note</h2><button type="button" class="icon-btn" data-close aria-label="Close">✕</button></header>
+      <div class="body">
+        <p class="hint">For when the AI is out of quota or you’re in a hurry. Process it later with AI, or convert it by hand.</p>
+        <label>What did you find?<textarea name="text" rows="3" placeholder="e.g. Funism Eevee sleeping on cloud, Shopee ₱650"></textarea></label>
+        <label>Link<input name="link" type="url" placeholder="https://…" inputmode="url"></label>
+        <div class="field">
+          <span class="field-label">Tag</span>
+          <div class="seg" id="note-intent">
+            <label><input type="radio" name="intent" value="add" checked><span>Add</span></label>
+            <label><input type="radio" name="intent" value="ordered"><span>Ordered</span></label>
+            <label><input type="radio" name="intent" value="arrived"><span>Arrived</span></label>
+            <label><input type="radio" name="intent" value="check"><span>Check later</span></label>
+            <label><input type="radio" name="intent" value="other"><span>Other</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label">Photo</span>
+          <div id="note-photo" class="photo-row"></div>
+          <label class="btn small"><input type="file" id="note-photo-input" accept="image/*" hidden>Add photo</label>
+        </div>
+      </div>
+      <footer>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save note</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Assistant -->
+  <dialog id="dlg-agent" class="sheet drawer">
+    <div class="agent">
+      <header>
+        <h2>Assistant</h2>
+        <span class="muted small" id="agent-model"></span>
+        <button type="button" class="icon-btn" data-close aria-label="Close">✕</button>
+      </header>
+      <div id="agent-log" class="log"></div>
+      <form id="agent-form" class="composer">
+        <div id="agent-attach" class="attach" hidden></div>
+        <div class="composer-row">
+          <label class="icon-btn" aria-label="Attach photo" title="Attach photo">
+            <input type="file" id="agent-file" accept="image/*" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          </label>
+          <textarea id="agent-input" rows="1" placeholder="“check for Funism” or “found this, add it”" enterkeyhint="send"></textarea>
+          <button class="btn primary" type="submit">Send</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Settings -->
+  <dialog id="dlg-settings" class="sheet">
+    <form id="settings-form" novalidate>
+      <header><h2>Settings</h2><button type="button" class="icon-btn" data-close aria-label="Close">✕</button></header>
+      <div class="body">
+        <p class="hint">Keys are stored only on this device. On iPhone, the home-screen app keeps its own storage, separate from Safari, so enter them inside the installed app (or paste a setup code).</p>
+
+        <h3>GitHub (saving)</h3>
+        <div class="grid2">
+          <label>Owner<input name="owner" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+          <label>Repo<input name="repo" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+        </div>
+        <div class="grid2">
+          <label>Branch<input name="branch" autocomplete="off" autocapitalize="off"></label>
+          <label>Token<input name="ghToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
+        </div>
+        <div class="row"><button type="button" class="btn small" id="test-gh">Test GitHub</button><span class="hint" id="test-gh-out"></span></div>
+
+        <h3>Gemini (assistant)</h3>
+        <label>API key<input name="geminiKey" type="password" autocomplete="off" placeholder="from aistudio.google.com"></label>
+        <label>Model<input name="model" list="models" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+        <datalist id="models"></datalist>
+        <p class="hint">Free Google Search grounding currently works on <code>gemini-2.5-flash-lite</code> (500 searches/day). Newer models may need a paid plan for search.</p>
+        <div class="row"><button type="button" class="btn small" id="load-models">Load models</button><span class="hint" id="models-out"></span></div>
+
+        <h3>Move keys to another device</h3>
+        <div class="row">
+          <button type="button" class="btn small" id="copy-setup">Copy setup code</button>
+          <span class="hint">Contains your keys. Only paste it on your own devices.</span>
+        </div>
+        <label>Paste setup code<textarea id="setup-code" rows="2" placeholder="EEVEE1.…"></textarea></label>
+        <div class="row"><button type="button" class="btn small" id="apply-setup">Apply code</button></div>
+
+        <h3>App</h3>
+        <div class="row wrap">
+          <button type="button" class="btn small" id="install-app" hidden>Install app</button>
+          <button type="button" class="btn small" id="reload-data">Reload from GitHub</button>
+          <button type="button" class="btn small" id="export-md">Export Markdown</button>
+          <button type="button" class="btn small" id="export-json">Export JSON</button>
+        </div>
+        <p class="hint" id="ios-tip" hidden>On iPhone: open this site in Safari → Share → <strong>Add to Home Screen</strong>.</p>
+      </div>
+      <footer>
+        <button type="button" class="btn" data-close>Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Photo viewer -->
+  <dialog id="dlg-photo" class="viewer">
+    <button type="button" class="icon-btn close" data-close aria-label="Close">✕</button>
+    <img id="viewer-img" alt="">
+    <div class="viewer-nav">
+      <button type="button" class="icon-btn" id="viewer-prev" aria-label="Previous">‹</button>
+      <span id="viewer-count" class="small"></span>
+      <button type="button" class="icon-btn" id="viewer-next" aria-label="Next">›</button>
+    </div>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+</body>
+</html>
