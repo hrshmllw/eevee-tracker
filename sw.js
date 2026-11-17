@@ -1,23 +1,30 @@
-// Service worker: offline app shell, network-first data, cache-first photos.
+// Service worker: offline app shell (incl. the pinned Firebase SDK). Data and photos are cached by
+// Firestore itself (IndexedDB), so they're not handled here.
 // The shell is network-first, so deploys show up on the next open. Bump VERSION when the list of
 // SHELL_FILES changes (or to force-refresh the offline copy).
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL = `shell-${VERSION}`;
-const DATA = 'data';
-const PHOTOS = 'photos';
+const LIBS = 'libs';
+const FIREBASE = 'https://www.gstatic.com/firebasejs/11.10.0/';
 const SHELL_FILES = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
-  'js/app.js', 'js/store.js', 'js/github.js', 'js/queue.js', 'js/agent.js', 'js/settings.js', 'js/util.js',
+  'js/app.js', 'js/store.js', 'js/firebase-config.js', 'js/agent.js', 'js/settings.js', 'js/util.js',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(SHELL).then((c) => c.addAll(SHELL_FILES)));
+  e.waitUntil((async () => {
+    await (await caches.open(SHELL)).addAll(SHELL_FILES);
+    // Versioned, immutable SDK files: precache so the app opens offline.
+    const libs = await caches.open(LIBS);
+    await Promise.all(['firebase-app.js', 'firebase-auth.js', 'firebase-firestore.js']
+      .map((f) => libs.add(FIREBASE + f).catch(() => {})));
+  })());
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k.startsWith('shell-') && k !== SHELL) await caches.delete(k);
+    for (const k of await caches.keys()) if ((k.startsWith('shell-') && k !== SHELL) || k === 'data' || k === 'photos') await caches.delete(k); // old GitHub-storage caches
     await self.clients.claim();
   })());
 });
@@ -29,16 +36,9 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  const isPhoto = /\/data\/(photos|note-photos)\/[^/]+\.(jpe?g|png|webp)$/i.test(url.pathname);
-
-  if (isPhoto && (sameOrigin || url.hostname === 'raw.githubusercontent.com')) {
-    e.respondWith(cacheFirst(req, PHOTOS));
-  } else if (sameOrigin && /\/data\/[^/]+\.json$/.test(url.pathname)) {
-    e.respondWith(networkFirst(req, DATA));
-  } else if (sameOrigin) {
-    e.respondWith(shell(req));
-  }
-  // everything else (GitHub API, Gemini) goes straight to the network
+  if (req.url.startsWith(FIREBASE)) e.respondWith(cacheFirst(req, LIBS));
+  else if (sameOrigin) e.respondWith(shell(req));
+  // everything else (Firestore, sign-in, Gemini) goes straight to the network
 });
 
 // App shell: network-first (so a deploy shows up on the next open) with a 3 s timeout,
@@ -63,17 +63,4 @@ async function cacheFirst(req, name) {
   const res = await fetch(req);
   if (res.ok) (await caches.open(name)).put(req, res.clone());
   return res;
-}
-
-async function networkFirst(req, name) {
-  const key = new Request(new URL(req.url).pathname); // ignore cache-busting params
-  try {
-    const res = await fetch(req);
-    if (res.ok) (await caches.open(name)).put(key, res.clone());
-    return res;
-  } catch {
-    const hit = await caches.match(key);
-    if (hit) return hit;
-    throw new Error('offline');
-  }
 }

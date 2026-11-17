@@ -1,197 +1,254 @@
-// Data layer: load from GitHub (or the site copy / last cache), apply changes optimistically,
-// and push them to GitHub as commits through an IndexedDB outbox.
-import { gh, rawUrl } from './github.js';
-import { queue } from './queue.js';
-import { settings } from './settings.js';
-import { utf8ToB64, blobToB64, today, nowIso } from './util.js';
+// Data layer: Firestore (private, per Google account) with offline persistence.
+// Layout: users/{uid}/items/{id}, users/{uid}/notes/{id}, users/{uid}/photos/{key},
+//         users/{uid}/meta/collection (notes, aliases, group order), users/{uid}/meta/settings (Gemini key).
+// Writes apply locally at once and Firestore syncs them, queuing across reloads while offline.
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
+import {
+  getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  signInWithEmailAndPassword, signOut as fbSignOut, EmailAuthProvider, linkWithCredential, updatePassword,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
+import {
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, onSnapshot,
+  setDoc, updateDoc, deleteDoc, getDoc, writeBatch, Bytes,
+} from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
+import { firebaseConfig } from './firebase-config.js';
+import { settings, saveSettings } from './settings.js';
+import { today, nowIso } from './util.js';
 
-export const FILES = { collection: 'data/collection.json', notes: 'data/notes.json' };
-const EMPTY = { collection: { updated: today(), meta: {}, items: [] }, notes: { notes: [] } };
-const clone = (x) => JSON.parse(JSON.stringify(x));
+export const configured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
+const app = configured ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
+const db = app ? initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  ignoreUndefinedProperties: true,
+}) : null;
 
 export const store = new EventTarget();
-store.data = { collection: clone(EMPTY.collection), notes: clone(EMPTY.notes) };
-store.status = { source: '', syncing: false, error: '', offline: !navigator.onLine, pending: 0, loadedAt: 0 };
-const base = { collection: clone(EMPTY.collection), notes: clone(EMPTY.notes) };
-let pending = [];
-const photoUrls = new Map();
-let flushing = false, flushAgain = false;
+store.user = null;
+store.data = { collection: { updated: '', meta: {}, items: [] }, notes: { notes: [] } };
+store.status = { authReady: false, loaded: false, fromCache: false, error: '', offline: !navigator.onLine, pending: 0, writing: 0, loadedAt: 0 };
 
 const emit = (type) => store.dispatchEvent(new Event(type));
+const raw = { items: [], notes: [], meta: {}, pend: { items: 0, notes: 0, meta: 0 }, got: new Set() };
+let unsubs = [];
+const photoUrls = new Map();
+const photoLoading = new Map();
+
 function setStatus(patch) {
-  Object.assign(store.status, patch, { pending: pending.length });
+  Object.assign(store.status, patch);
+  store.status.pending = raw.pend.items + raw.pend.notes + raw.pend.meta + store.status.writing;
   emit('status');
 }
 
-export function applyOp(doc, file, op) {
-  const list = file === 'collection' ? (doc.items ||= []) : (doc.notes ||= []);
-  const i = list.findIndex((x) => x.id === (op.id || op.item?.id));
-  if (op.t === 'add') {
-    if (i === -1) {
-      if (Number.isInteger(op.index) && op.index >= 0 && op.index <= list.length) list.splice(op.index, 0, op.item);
-      else list.push(op.item);
-    }
-  } else if (op.t === 'update' && i !== -1) {
-    Object.assign(list[i], op.patch);
-  } else if (op.t === 'delete' && i !== -1) {
-    list.splice(i, 1);
-  } else if (op.t === 'meta' && file === 'collection') {
-    doc.meta = { ...(doc.meta || {}), ...op.patch };
-  }
-  if (file === 'collection') doc.updated = today();
-}
+const ref = {
+  items: () => collection(db, 'users', store.user.uid, 'items'),
+  notes: () => collection(db, 'users', store.user.uid, 'notes'),
+  meta: (name) => doc(db, 'users', store.user.uid, 'meta', name),
+  photo: (path) => doc(db, 'users', store.user.uid, 'photos', photoKey(path)),
+};
+const photoKey = (path) => String(path).replace(/[/\\]/g, '__').replace(/^\.+/, '_').slice(0, 1400);
 
 function rebuild() {
-  for (const f of Object.keys(FILES)) {
-    const d = clone(base[f]);
-    for (const r of pending) if (r.kind === 'json' && r.file === f) applyOp(d, f, r.op);
-    store.data[f] = d;
-  }
-  setStatus({});
+  store.data = {
+    collection: { updated: raw.meta.updated || '', meta: raw.meta, items: raw.items },
+    notes: { notes: raw.notes },
+  };
   emit('change');
 }
 
-async function fetchSite(path) {
-  const res = await fetch(path, { cache: 'no-store' });
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-}
-
-export async function load() {
-  let source = '', error = '';
-  if (gh.canRead && navigator.onLine) {
-    try {
-      for (const [f, path] of Object.entries(FILES)) {
-        const r = await gh.getFile(path);
-        base[f] = r ? JSON.parse(r.text) : clone(EMPTY[f]);
-      }
-      source = 'github';
-    } catch (e) { error = describe(e); }
-  }
-  if (!source && gh.canRead) {
-    const cached = await queue.kvGet('base').catch(() => null);
-    if (cached) { Object.assign(base, cached); source = 'cache'; }
-  }
-  if (!source) {
-    try {
-      for (const [f, path] of Object.entries(FILES)) base[f] = (await fetchSite(path)) || clone(EMPTY[f]);
-      source = 'site';
-    } catch (e) {
-      const cached = await queue.kvGet('base').catch(() => null);
-      if (cached) { Object.assign(base, cached); source = 'cache'; } else error ||= 'Could not load the list. Check your connection.';
-    }
-  }
-  if (source === 'github') await queue.kvSet('base', clone(base)).catch(() => {});
-
-  pending = (await queue.all().catch(() => [])) || [];
-  for (const r of pending) {
-    if (r.kind === 'photo' && !photoUrls.has(r.path)) {
-      const blob = await queue.getBlob(r.path).catch(() => null);
-      if (blob) photoUrls.set(r.path, URL.createObjectURL(blob));
-    }
-  }
-  setStatus({ source, error, loadedAt: Date.now() });
+function listen() {
+  for (const u of unsubs) u();
+  photoUrls.forEach((u) => URL.revokeObjectURL(u));
+  photoUrls.clear();
+  raw.items = []; raw.notes = []; raw.meta = {}; raw.got.clear();
+  raw.pend = { items: 0, notes: 0, meta: 0 };
+  setStatus({ loaded: false, error: '' });
   rebuild();
-  flush();
+  if (!store.user) { unsubs = []; return; }
+
+  const opts = { includeMetadataChanges: true };
+  const onErr = (e) => setStatus({ error: describe(e) });
+  const arrived = (name, snap) => {
+    raw.got.add(name);
+    setStatus({ loaded: raw.got.size >= 3, fromCache: snap.metadata.fromCache, loadedAt: Date.now() });
+  };
+  unsubs = [
+    onSnapshot(ref.items(), opts, (snap) => {
+      raw.items = snap.docs.map((d) => ({ ...d.data(), id: d.id }))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || String(a.name).localeCompare(String(b.name)));
+      raw.pend.items = snap.docs.filter((d) => d.metadata.hasPendingWrites).length;
+      arrived('items', snap); rebuild();
+    }, onErr),
+    onSnapshot(ref.notes(), opts, (snap) => {
+      raw.notes = snap.docs.map((d) => ({ ...d.data(), id: d.id }));
+      raw.pend.notes = snap.docs.filter((d) => d.metadata.hasPendingWrites).length;
+      arrived('notes', snap); rebuild();
+    }, onErr),
+    onSnapshot(ref.meta('collection'), opts, (snap) => {
+      raw.meta = snap.data() || {};
+      raw.pend.meta = snap.metadata.hasPendingWrites ? 1 : 0;
+      arrived('meta', snap); rebuild();
+    }, onErr),
+    onSnapshot(ref.meta('settings'), (snap) => {
+      const s = snap.data();
+      if (s) saveSettings({ geminiKey: s.geminiKey || '', model: s.model || settings.model });
+    }, onErr),
+  ];
 }
 
-/** Queue a change to collection.json or notes.json and apply it locally right away. */
-export async function mutate(file, op, msg = '') {
-  const rec = { kind: 'json', file, op, msg };
-  rec.seq = await queue.add(rec);
-  pending.push(rec);
-  rebuild();
-  flush();
+/** Start auth. Fires 'status' when the signed-in state is known. */
+export function load() {
+  if (!configured) { setStatus({ authReady: true, error: 'Firebase isn’t set up yet: add your config to js/firebase-config.js.' }); return; }
+  if (load.started) return;
+  load.started = true;
+  getRedirectResult(auth).catch((e) => setStatus({ error: describe(e) }));
+  onAuthStateChanged(auth, (user) => {
+    store.user = user;
+    setStatus({ authReady: true });
+    listen();
+  });
 }
 
-/** Queue a photo upload. Call before the mutate() that references the path. */
+export async function signIn() {
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/web-storage-unsupported'].includes(e.code)) {
+      return signInWithRedirect(auth, provider);
+    }
+    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+    throw e;
+  }
+}
+export const signInWithPassword = (email, password) => signInWithEmailAndPassword(auth, email, password);
+export const signOut = () => fbSignOut(auth);
+
+/** Add (or change) a password on the signed-in account, for devices where Google sign-in doesn't work. */
+export async function setAppPassword(password) {
+  const user = auth.currentUser;
+  if (user.providerData.some((p) => p.providerId === 'password')) return updatePassword(user, password);
+  return linkWithCredential(user, EmailAuthProvider.credential(user.email, password));
+}
+export const hasPassword = () => Boolean(store.user?.providerData.some((p) => p.providerId === 'password'));
+
+// Firestore write promises resolve only once the server confirms. Offline they stay pending
+// (and are persisted), so track them for the status pill and surface real failures.
+function track(p) {
+  setStatus({ writing: store.status.writing + 1 });
+  p.then(() => setStatus({ writing: store.status.writing - 1, error: '', lastSync: nowIso() }),
+    (e) => setStatus({ writing: store.status.writing - 1, error: describe(e) }));
+}
+
+/** Apply a change: file 'collection' | 'notes'; op {t:'add', item, index?} | {t:'update', id, patch} | {t:'delete', id} | {t:'meta', patch}. */
+export async function mutate(file, op) {
+  if (!store.user) throw new Error('Sign in first.');
+  const kind = file === 'collection' ? 'items' : 'notes';
+  const list = file === 'collection' ? raw.items : raw.notes;
+  const col = ref[kind]();
+  if (op.t === 'add') {
+    const item = { ...op.item };
+    if (file === 'collection' && typeof item.order !== 'number') item.order = orderFor(list, op.index);
+    delete item.id;
+    track(setDoc(doc(col, op.item.id), item));
+  } else if (op.t === 'update') {
+    track(updateDoc(doc(col, op.id), op.patch));
+  } else if (op.t === 'delete') {
+    track(deleteDoc(doc(col, op.id)));
+  } else if (op.t === 'meta') {
+    track(setDoc(ref.meta('collection'), op.patch, { merge: true }));
+    return;
+  }
+  if (file === 'collection') track(setDoc(ref.meta('collection'), { updated: today() }, { merge: true }));
+}
+
+function orderFor(list, index) {
+  const orders = list.map((x) => x.order ?? 0);
+  if (!Number.isInteger(index) || index >= list.length) return (orders.length ? Math.max(...orders) : 0) + 1;
+  const after = orders[index];
+  const before = index > 0 ? orders[index - 1] : after - 2;
+  return (before + after) / 2;
+}
+
+/** Save a photo (resized JPEG blob) under `path`. Call before the mutate() that references it. */
 export async function addPhoto(path, blob) {
+  if (blob.size > 900 * 1024) throw new Error('Photo is too large (max ~900 KB after resizing).');
   photoUrls.set(path, URL.createObjectURL(blob));
-  await queue.putBlob(path, blob);
-  const rec = { kind: 'photo', path };
-  rec.seq = await queue.add(rec);
-  pending.push(rec);
-  setStatus({});
-  flush();
+  const data = Bytes.fromUint8Array(new Uint8Array(await blob.arrayBuffer()));
+  track(setDoc(ref.photo(path), { data, type: blob.type || 'image/jpeg', created: nowIso() }));
 }
 
+const BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+/** Sync URL for an <img>. Returns a placeholder and re-renders once the photo has loaded. */
 export function photoUrl(path) {
   if (!path) return '';
   if (/^(https?:|blob:|data:)/.test(path)) return path;
-  return photoUrls.get(path) || (settings.owner && settings.repo ? rawUrl(path) : path);
+  if (photoUrls.has(path)) return photoUrls.get(path);
+  photoUrlAsync(path).then((u) => { if (u) emit('change'); }, () => {});
+  return BLANK;
+}
+
+export async function photoUrlAsync(path) {
+  if (/^(https?:|blob:|data:)/.test(path)) return path;
+  if (photoUrls.has(path)) return photoUrls.get(path);
+  if (!store.user) return '';
+  if (!photoLoading.has(path)) {
+    photoLoading.set(path, (async () => {
+      const snap = await getDoc(ref.photo(path));
+      if (!snap.exists()) return '';
+      const { data, type } = snap.data();
+      const url = URL.createObjectURL(new Blob([data.toUint8Array()], { type: type || 'image/jpeg' }));
+      photoUrls.set(path, url);
+      return url;
+    })().finally(() => photoLoading.delete(path)));
+  }
+  return photoLoading.get(path);
 }
 
 export async function photoBlob(path) {
-  const local = await queue.getBlob(path).catch(() => null);
-  if (local) return local;
-  const res = await fetch(photoUrl(path));
-  if (!res.ok) throw new Error('Photo not available offline');
-  return res.blob();
+  const url = await photoUrlAsync(path);
+  if (!url) throw new Error('Photo not available');
+  return (await fetch(url)).blob();
 }
 
-export async function flush() {
-  if (flushing) { flushAgain = true; return; }
-  if (!pending.length) return setStatus({});
-  if (!gh.canWrite) return setStatus({});
-  if (!navigator.onLine) return setStatus({ offline: true });
-  flushing = true;
-  setStatus({ syncing: true });
-  try {
-    while (pending.length) {
-      const head = pending[0];
-      if (head.kind === 'photo') {
-        const blob = await queue.getBlob(head.path);
-        if (blob) {
-          try {
-            await gh.putFile(head.path, await blobToB64(blob), null, `Add photo ${head.path.split('/').pop()}`);
-          } catch (e) { if (e.status !== 422) throw e; } // 422 = already uploaded
-        }
-        await queue.remove(head.seq);
-        await queue.deleteBlob(head.path).catch(() => {});
-        pending = pending.filter((r) => r !== head);
-        continue;
-      }
-      const file = head.file;
-      const batch = [];
-      for (const r of pending) { if (r.kind === 'json' && r.file === file) batch.push(r); else break; }
-      const msgs = [...new Set(batch.map((r) => r.msg).filter(Boolean))];
-      const message = (msgs.slice(0, 3).join('; ') || `Update ${file}`) + (msgs.length > 3 ? ` (+${msgs.length - 3} more)` : '');
-      for (let attempt = 0; ; attempt++) {
-        const remote = await gh.getFile(FILES[file]);
-        const doc = remote ? JSON.parse(remote.text) : clone(EMPTY[file]);
-        for (const r of batch) applyOp(doc, file, r.op);
-        try {
-          await gh.putFile(FILES[file], utf8ToB64(JSON.stringify(doc, null, 2) + '\n'), remote?.sha, message);
-          base[file] = doc;
-          break;
-        } catch (e) {
-          if ((e.status === 409 || e.status === 422) && attempt < 3) continue; // someone else committed; retry on fresh copy
-          throw e;
-        }
-      }
-      for (const r of batch) await queue.remove(r.seq);
-      pending = pending.filter((r) => !batch.includes(r));
-    }
-    await queue.kvSet('base', clone(base)).catch(() => {});
-    setStatus({ error: '', offline: false, lastSync: nowIso() });
-  } catch (e) {
-    setStatus({ error: describe(e), offline: !navigator.onLine });
-  } finally {
-    flushing = false;
-    setStatus({ syncing: false });
-    rebuild();
-    if (flushAgain) { flushAgain = false; flush(); }
+/** Import an exported collection JSON ({meta, items}) or a plain item array. Replaces items with the same id. */
+export async function importCollection(json) {
+  const itemsIn = Array.isArray(json) ? json : json.items;
+  if (!Array.isArray(itemsIn) || !itemsIn.every((x) => x && x.id && x.name)) throw new Error('That file doesn’t look like an Eevee Tracker export.');
+  const base = raw.items.length ? Math.max(...raw.items.map((x) => x.order ?? 0)) + 1 : 0;
+  const ops = itemsIn.map((it, i) => (b) => {
+    const { id, ...rest } = it;
+    b.set(doc(ref.items(), id), { ...rest, order: typeof it.order === 'number' ? it.order : base + i });
+  });
+  if (!Array.isArray(json) && json.meta) ops.push((b) => b.set(ref.meta('collection'), { ...json.meta, updated: today() }, { merge: true }));
+  for (let i = 0; i < ops.length; i += 400) {
+    const b = writeBatch(db);
+    ops.slice(i, i + 400).forEach((f) => f(b));
+    track(b.commit());
   }
+  return itemsIn.length;
+}
+
+/** Save the Gemini key/model to the account so every signed-in device gets it. */
+export function saveAccountSettings(patch) {
+  saveSettings(patch);
+  if (store.user) track(setDoc(ref.meta('settings'), patch, { merge: true }));
 }
 
 export function describe(e) {
-  if (e?.status === 401) return 'GitHub token was rejected. Update it in Settings.';
-  if (e?.status === 403) return 'GitHub token can’t write to this repo (needs Contents: read & write).';
-  if (e?.status === 404) return 'Repo not found. Check owner/repo in Settings.';
-  if (e instanceof TypeError || !navigator.onLine) return 'Offline. Changes will sync when you’re back online.';
+  const code = e?.code || '';
+  if (code === 'permission-denied') return 'Firestore refused access. Check the security rules (see README).';
+  if (code === 'unavailable' || !navigator.onLine) return 'Offline. Changes will sync when you’re back online.';
+  if (code === 'auth/unauthorized-domain') return `This site isn’t allowed to sign in yet. Add ${location.hostname} under Firebase → Authentication → Settings → Authorized domains.`;
+  if (code === 'auth/operation-not-allowed') return 'That sign-in method isn’t turned on in Firebase → Authentication → Sign-in method.';
+  if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Wrong email or password.';
+  if (code === 'auth/requires-recent-login') return 'For security, sign out and back in with Google, then set the password again.';
+  if (code === 'auth/weak-password') return 'Password must be at least 6 characters.';
+  if (code === 'auth/credential-already-in-use' || code === 'auth/email-already-in-use') return 'That email already has a separate password account. Sign in with it instead.';
   return e?.message || String(e);
 }
 
-addEventListener('online', () => { setStatus({ offline: false }); flush(); });
+addEventListener('online', () => setStatus({ offline: false }));
 addEventListener('offline', () => setStatus({ offline: true }));

@@ -311,3 +311,17 @@ dialog::backdrop { background: rgb(20 12 5 / .45); }
   .toast { animation: none; }
   .sync[data-state="syncing"] .dot { animation: none; }
 }
+
+/* sign-in / first-run */
+.gated .stats, .gated .toolbar, .gated .dock { display: none; }
+.gate { max-width: 420px; margin: 8vh auto 0; padding: 28px 22px; text-align: center; display: grid; gap: 14px; justify-items: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.gate h2 { margin: 0; font-size: 1.35rem; }
+.gate p { margin: 0; color: var(--muted); }
+.gate .btn { min-width: 220px; justify-content: center; }
+.gate .pw { width: 100%; text-align: left; }
+.gate .pw summary { cursor: pointer; text-align: center; color: var(--accent); font-size: .9rem; padding: 4px; }
+.gate .pw .hint { margin: 8px 0; }
+.stack { display: grid; gap: 10px; }
+.gate label { display: grid; gap: 4px; font-size: .85rem; font-weight: 600; color: var(--muted); }
+.grow { flex: 1; min-width: 0; overflow-wrap: anywhere; }

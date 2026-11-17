@@ -2,32 +2,36 @@
 
 A personal Eevee collectibles tracker (owned, incoming, wishlist). It installs as an app on desktop and iPhone, keeps working offline, and includes a free AI assistant that **checks with Google Search that a brand or figure really exists** before anything is added.
 
-- **Hosting:** GitHub Pages (free). No server, no build step.
-- **Data:** `data/collection.json` and `data/notes.json` in this repo. Every change is a commit, so git history works as an undo log.
-- **Photos:** stored in this repo (`data/photos/`, `data/note-photos/`). They're resized to about 800 px JPEG (~100–150 KB) before upload.
+- **Hosting:** GitHub Pages (free). No server, no build step. The repo holds only the app code.
+- **Data:** Google Firestore on the free Spark plan (no card). It's private to your Google account. Items, notes, photos and your Gemini key live under `users/{your uid}/` and sync across your devices.
+- **Sign-in:** Google. An optional email and password gets you into the same account where Google sign-in won't open.
+- **Photos:** resized in the browser to about 800 px JPEG (~100–150 KB) and stored in Firestore. 1 GB of free space is roughly 7,000 photos.
 - **AI:** Google Gemini (free API key) with Google Search grounding.
 - **Notes:** a quick-capture inbox for when the AI is out of quota. You can process notes with AI later, or convert them by hand.
 
-## One-time setup
+## One-time Firebase setup (about 5 minutes)
+Do this signed in to your **personal** Google account at <https://console.firebase.google.com>.
 
-1. **Create the repo.** On github.com, click New repository, name it `eevee-tracker`, and make it **Public** (free Pages needs a public repo). Then push this folder:
-   ```sh
-   git remote add origin https://github.com/<you>/eevee-tracker.git
-   git push -u origin main
-   ```
-2. **Turn on Pages.** In the repo, go to Settings → Pages → Build and deployment → *Deploy from a branch*, then pick `main` / `(root)`. The site will be at `https://<you>.github.io/eevee-tracker/`.
-3. **Create a GitHub token.** Go to Settings → Developer settings → Personal access tokens → **Fine-grained tokens** → Generate:
-   - Repository access: **Only select repositories → eevee-tracker**
-   - Permissions → Repository → **Contents: Read and write**
-   - Pick an expiry you're happy with. When it expires, the app shows "token rejected"; make a new one and paste it in.
-4. **Get a Gemini key.** At <https://aistudio.google.com/apikey>, click Create API key (free, no card).
-5. **Enter the keys.** Open the site → ⚙ Settings → paste the token and the Gemini key → **Test GitHub** → Save.
+1. **Create a project.** Click *Create a project*, name it `eevee-tracker`, and turn Google Analytics off. It stays on the free Spark plan; no card needed.
+2. **Turn on sign-in.** Go to Build → **Authentication** → Get started → *Sign-in method*:
+   - Enable **Google**, and pick your email as the support email.
+   - Enable **Email/Password**. Only the first switch is needed; leave "Email link" off.
+3. **Allow the site.** Go to Authentication → *Settings* → **Authorized domains** → Add domain → `hrshmllw.github.io`. (`localhost` is already allowed.)
+4. **Create the database.** Go to Build → **Firestore Database** → Create database:
+   - Pick a location near you (e.g. `asia-southeast1`, Singapore). You can't change it later.
+   - Choose **production mode**.
+   - Open the **Rules** tab, replace its contents with this repo's [`firestore.rules`](firestore.rules), and click **Publish**.
+5. **Register the web app.** Go to Project settings (⚙) → *Your apps* → **Web** (`</>`). Register it as "Eevee Tracker" with Hosting off, then copy the `firebaseConfig` values into [`js/firebase-config.js`](js/firebase-config.js) and push.
+   - These values are meant to be public. What protects your data is sign-in plus the rules.
+6. **First sign-in.**
+   - Open <https://hrshmllw.github.io/eevee-tracker/> → *Sign in with Google*. The empty account offers **Import**; pick `data/collection.json` (kept locally, not in the repo).
+   - Then go to ⚙ Settings, paste your Gemini key (<https://aistudio.google.com/apikey>) and Save. The key is saved to your account, so other devices pick it up.
 
 ### Installing the app
 - **Desktop (Chrome/Edge):** use the install icon in the address bar, or Settings → *Install app*.
-- **iPhone:** open the site in **Safari** → Share → **Add to Home Screen**.
-  - The home-screen app has **its own storage, separate from Safari**, so enter the keys inside the installed app.
-  - Shortcut: on a device that's already set up, go to Settings → *Copy setup code*. Then paste the code into the iPhone app's Settings → *Paste setup code*. The code contains your keys, so keep it to your own devices.
+- **iPhone:** open the site in **Safari** → Share → **Add to Home Screen**, open the app, then sign in.
+  - The home-screen app has its own storage, separate from Safari, so you sign in once inside it.
+  - If *Sign in with Google* doesn't come back to the app, go to Settings → *Set an app password* on a device where you're signed in with Google. Then, in the iPhone app, use *Use email & password instead*. It's the same account and the same list.
 
 ## Using it
 - **Add / Note / Ask AI** sit in the bottom dock.
@@ -41,15 +45,17 @@ A personal Eevee collectibles tracker (owned, incoming, wishlist). It installs a
   - Sources come from Google's search results, never from links the AI wrote itself.
   - Nothing is added until you tap a button.
 - **Out of quota?** The error offers *Save as note*. You can also tap **Note** at any time. Later, the Notes tab has **Process with AI** (one or all), **Convert** (manual add form, pre-filled), or a one-tap "Mark X Owned" when it recognises the item.
-- **Offline:** the last synced list still loads. Notes, photos and edits wait in an on-device outbox and sync when you're back online. The pill at the top right shows the sync state.
-- **Export:** Settings → Export Markdown (same layout as the original list) or JSON.
+- **Offline:** your list and photos you've already viewed still load. Changes and notes are saved on the device and sync when you're back online. The pill at the top right shows the sync state.
+- **Export / import:** Settings → Export Markdown (same layout as the original list), Export JSON, or Import JSON.
 
 ## Free limits (checked Nov 2026)
-- Gemini free tier: Google Search grounding is free on `gemini-2.5-flash-lite` / `gemini-2.5-flash`, up to **500 grounded requests a day** (shared). The app defaults to `gemini-2.5-flash-lite`. Use Settings → *Load models* to see what your key can use. Limits change, so see <https://aistudio.google.com/rate-limit>.
-- GitHub: keep the repo under ~1 GB, which is about 5,000+ photos at this size.
+- **Firestore (Spark):** 1 GiB stored, 50k reads/day, 20k writes/day. That's far more than one collection needs.
+  - Any Google account can sign in, but the rules only let it see its own empty space. To lock the database to just you, change the rule to `request.auth.uid == '<your uid>'`.
+- **Gemini free tier:** Google Search grounding is free on `gemini-2.5-flash-lite` / `gemini-2.5-flash`, up to **500 grounded requests a day** (shared). The app defaults to `gemini-2.5-flash-lite`. Limits change, so see <https://aistudio.google.com/rate-limit>.
 
 ## Development
-- Serve the folder over http, e.g. XAMPP at `http://localhost/eevee-tracker/` or `npx serve`. Service workers need http(s), so opening the file directly won't work.
-- `node scripts/import-md.mjs <list.md>` re-imports a Markdown list. It **overwrites** `data/collection.json`.
+- Serve the folder over http, e.g. `npx serve` and open `http://localhost:3000/`. Service workers and sign-in need http(s), so opening the file directly won't work.
+- `node scripts/import-md.mjs <list.md>` turns a Markdown list into `data/collection.json`, which you then import in the app. `data/` is git-ignored.
 - `node scripts/make-icons.mjs` regenerates the icons.
+- The Firebase SDK is loaded from gstatic, pinned to 11.10.0 in `js/store.js` and `sw.js`. Keep both in sync.
 - The service worker loads app files network-first, so a push shows up on the next open (the cached copy is only used offline). Bump `VERSION` in `sw.js` when you add or rename app files.

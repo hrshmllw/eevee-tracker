@@ -1,6 +1,8 @@
-import { store, load, mutate, addPhoto, photoUrl, photoBlob, flush } from './store.js';
-import { settings, saveSettings, makeSetupCode, applySetupCode, DEFAULT_MODEL } from './settings.js';
-import { gh } from './github.js';
+import {
+  store, load, mutate, addPhoto, photoUrl, photoUrlAsync, photoBlob, configured, signIn, signInWithPassword, signOut,
+  setAppPassword, hasPassword, importCollection, saveAccountSettings, describe,
+} from './store.js';
+import { settings, saveSettings, DEFAULT_MODEL } from './settings.js';
 import { localPass, askGemini, listModels } from './agent.js';
 import {
   STATUSES, STATUS_LABEL, STATUS_LONG, esc, slugify, uniqueId, norm, findMatches,
@@ -54,10 +56,64 @@ function toast(msg, action, ms = 5000) {
 
 /* ---------- rendering ---------- */
 function render() {
+  const gate = gateHtml();
+  document.body.classList.toggle('gated', Boolean(gate));
+  if (gate) { if ($('#list').dataset.gate !== gate) { $('#list').innerHTML = gate; $('#list').dataset.gate = gate; } return; }
+  delete $('#list').dataset.gate;
   renderStats();
   renderChips();
   if (ui.filter === 'notes') renderNotes(); else renderItems();
   fillDatalists();
+}
+
+/* ---------- sign-in / first-run screens ---------- */
+let skipImport = false;
+function gateHtml() {
+  const s = store.status;
+  if (!configured) {
+    return `<section class="gate"><h2>Almost there</h2><p>Firebase isn’t connected yet. Add your project’s web config to <code>js/firebase-config.js</code> (see the README).</p></section>`;
+  }
+  if (!s.authReady) return '<section class="gate"><p class="empty">Loading…</p></section>';
+  if (!store.user) {
+    return `<section class="gate">
+      <img src="icons/icon.svg" alt="" width="64" height="64">
+      <h2>Your Eevee collection</h2>
+      <p>Sign in to see and update your list. It’s private to your account.</p>
+      <button class="btn primary" type="button" data-act="signin">Sign in with Google</button>
+      <details class="pw">
+        <summary>Use email &amp; password instead</summary>
+        <p class="hint">For devices where Google sign-in doesn’t open (e.g. the iPhone home-screen app). Set the password first in Settings on a device where you’re signed in with Google.</p>
+        <form id="pw-signin" class="stack">
+          <label>Email<input name="email" type="email" autocomplete="username" required></label>
+          <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="btn" type="submit">Sign in</button>
+        </form>
+      </details>
+    </section>`;
+  }
+  if (s.loaded && !s.fromCache && !items().length && !notes().length && !skipImport) {
+    return `<section class="gate">
+      <h2>Bring in your list</h2>
+      <p>Your account is empty. Import <code>collection.json</code> (or an <b>Export JSON</b> file from this app).</p>
+      <button class="btn primary" type="button" data-act="import">Choose file…</button>
+      <button class="btn" type="button" data-act="skip-import">Start with an empty list</button>
+    </section>`;
+  }
+  return '';
+}
+
+async function pickImport() {
+  const file = await new Promise((resolve) => {
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = '.json,application/json';
+    inp.onchange = () => resolve(inp.files[0]);
+    inp.click();
+  });
+  if (!file) return;
+  try {
+    const n = await importCollection(JSON.parse(await file.text()));
+    toast(`Imported ${n} items`);
+  } catch (e) { toast(e instanceof SyntaxError ? 'That file isn’t valid JSON.' : describe(e)); }
 }
 
 function counts() {
@@ -222,12 +278,12 @@ function fillDatalists() {
 function renderSync() {
   const s = store.status;
   let state, label;
-  if (!gh.canWrite) { state = s.pending ? 'pending' : 'readonly'; label = s.pending ? `${s.pending} saved on this device` : 'Read-only'; }
-  else if (s.syncing) { state = 'syncing'; label = 'Syncing…'; }
+  if (!configured || (s.authReady && !store.user)) { state = 'readonly'; label = 'Signed out'; }
+  else if (!s.authReady || !s.loaded) { state = 'syncing'; label = 'Loading…'; }
   else if (s.offline) { state = 'offline'; label = s.pending ? `Offline · ${s.pending} waiting` : 'Offline'; }
-  else if (s.error) { state = 'error'; label = s.pending ? `${s.pending} not synced` : 'Sync problem'; }
-  else if (s.pending) { state = 'pending'; label = `${s.pending} waiting`; }
-  else { state = 'ok'; label = s.source === 'github' ? 'Synced' : s.source === 'cache' ? 'Last sync' : 'Loaded'; }
+  else if (s.error) { state = 'error'; label = 'Sync problem'; }
+  else if (s.pending) { state = 'syncing'; label = 'Syncing…'; }
+  else { state = 'ok'; label = s.fromCache ? 'Saved copy' : 'Synced'; }
   const b = $('#sync');
   b.dataset.state = state;
   $('.label', b).textContent = label;
@@ -235,12 +291,9 @@ function renderSync() {
 
   const banner = $('#banner');
   let msg = '', btn = '';
-  if (!gh.canWrite) {
-    msg = settings.ghToken ? 'Set the GitHub owner and repo in Settings to save changes.' : 'Viewing only. Add your GitHub token in Settings to save changes (anything you add now stays on this device until then).';
-    btn = '<button class="btn small" type="button" data-open="settings">Settings</button>';
-  } else if (s.error && !s.offline) {
-    msg = s.error; btn = '<button class="btn small" type="button" data-act="retry">Retry</button>';
-  } else if (s.offline || s.source === 'cache') {
+  if (s.error && !s.offline && configured) {
+    msg = s.error; btn = '<button class="btn small" type="button" data-act="retry">Reload</button>';
+  } else if (s.offline && store.user) {
     msg = 'Offline: showing your last synced list. Notes and changes will sync when you’re back online.';
   } else if (isIOS() && !isStandalone() && !settings.iosTipSeen) {
     msg = 'Tip: in Safari, tap Share → Add to Home Screen to install this app.';
@@ -285,7 +338,9 @@ function openViewer(paths, i = 0) {
   $('#dlg-photo').showModal();
 }
 function showViewer() {
-  $('#viewer-img').src = photoUrl(viewer.list[viewer.i]);
+  const path = viewer.list[viewer.i];
+  $('#viewer-img').src = photoUrl(path);
+  photoUrlAsync(path).then((u) => { if (u && viewer.list[viewer.i] === path) $('#viewer-img').src = u; }, () => {});
   $('#viewer-count').textContent = viewer.list.length > 1 ? `${viewer.i + 1} / ${viewer.list.length}` : '';
   $('#viewer-prev').hidden = $('#viewer-next').hidden = viewer.list.length < 2;
 }
@@ -432,7 +487,7 @@ $('#note-form').addEventListener('submit', async (e) => {
   const note = { id, created: nowIso(), text, link, intent: f.intent.value || 'add', photo, status: 'pending' };
   mutate('notes', { t: 'add', item: note }, `Note: ${(text || link || 'photo').slice(0, 50)}`);
   $('#dlg-note').close();
-  toast(gh.canWrite && navigator.onLine ? 'Note saved' : 'Note saved on this device. It will sync later.', { label: 'View', fn: () => setFilter('notes') });
+  toast(navigator.onLine ? 'Note saved' : 'Note saved on this device. It will sync when you’re online.', { label: 'View', fn: () => setFilter('notes') });
 });
 
 function markNote(id, patch) { mutate('notes', { t: 'update', id, patch }, patch.status === 'done' ? 'Note done' : 'Note updated'); }
@@ -704,43 +759,39 @@ $('#agent-attach').addEventListener('click', (e) => { if (e.target.closest('[dat
 /* ---------- settings ---------- */
 function openSettings() {
   const f = $('#settings-form');
-  for (const k of ['owner', 'repo', 'branch', 'ghToken', 'geminiKey', 'model']) f[k].value = settings[k] || '';
-  if (!f.model.value) f.model.value = DEFAULT_MODEL;
-  $('#test-gh-out').textContent = '';
+  f.geminiKey.value = settings.geminiKey || '';
+  f.model.value = settings.model || DEFAULT_MODEL;
+  f.newPassword.value = '';
+  $('#account-email').textContent = store.user ? store.user.email || 'Signed in' : 'Not signed in';
+  $('#account-box').hidden = !store.user;
+  $('#pw-label').textContent = hasPassword() ? 'Change app password' : 'Set an app password';
+  $('#pw-out').textContent = '';
   $('#models-out').textContent = '';
-  $('#setup-code').value = '';
   $('#ios-tip').hidden = !(isIOS() && !isStandalone());
   $('#install-app').hidden = !deferredInstall;
   $('#dlg-settings').showModal();
 }
-function formSettings() {
-  const f = $('#settings-form');
-  return {
-    owner: f.owner.value.trim(), repo: f.repo.value.trim(), branch: f.branch.value.trim() || 'main',
-    ghToken: f.ghToken.value.trim(), geminiKey: f.geminiKey.value.trim(), model: f.model.value.trim() || DEFAULT_MODEL,
-  };
-}
 $('#settings-form').addEventListener('submit', (e) => {
   e.preventDefault();
-  const before = JSON.stringify([settings.owner, settings.repo, settings.branch, settings.ghToken]);
-  saveSettings(formSettings());
+  const f = $('#settings-form');
+  saveAccountSettings({ geminiKey: f.geminiKey.value.trim(), model: f.model.value.trim() || DEFAULT_MODEL });
   $('#dlg-settings').close();
-  toast('Settings saved');
-  if (before !== JSON.stringify([settings.owner, settings.repo, settings.branch, settings.ghToken])) load(); else flush();
+  toast(store.user ? 'Settings saved to your account' : 'Settings saved on this device');
   renderSync();
 });
-$('#test-gh').onclick = async () => {
-  const out = $('#test-gh-out');
-  const saved = { ...settings };
-  Object.assign(settings, formSettings());
-  out.textContent = 'Checking…';
+$('#set-pw').onclick = async () => {
+  const out = $('#pw-out');
+  const pw = $('#settings-form').newPassword.value;
+  if (pw.length < 6) { out.textContent = 'At least 6 characters.'; return; }
+  out.textContent = 'Saving…';
   try {
-    const r = await gh.checkAccess();
-    out.textContent = r.push ? `✓ Can write to ${r.name}` : `Can read ${r.name} but NOT write. Give the token Contents: read & write.`;
-  } catch (err) {
-    out.textContent = err.status === 401 ? 'Token rejected.' : err.status === 404 ? 'Repo not found (or the token can’t see it).' : `Failed: ${err.message}`;
-  } finally { Object.assign(settings, saved); }
+    await setAppPassword(pw);
+    $('#settings-form').newPassword.value = '';
+    out.textContent = `✓ You can now sign in with ${store.user.email} and this password.`;
+    $('#pw-label').textContent = 'Change app password';
+  } catch (err) { out.textContent = describe(err); }
 };
+$('#sign-out').onclick = async () => { $('#dlg-settings').close(); await signOut(); toast('Signed out'); };
 $('#load-models').onclick = async () => {
   const out = $('#models-out');
   const key = $('#settings-form').geminiKey.value.trim();
@@ -752,23 +803,7 @@ $('#load-models').onclick = async () => {
     out.textContent = `✓ Key works. ${models.length} models available${models.includes(DEFAULT_MODEL) ? ` (includes ${DEFAULT_MODEL})` : ''}.`;
   } catch (err) { out.textContent = `Failed: ${err.message}`; }
 };
-$('#copy-setup').onclick = async () => {
-  saveSettings(formSettings());
-  const code = makeSetupCode();
-  try { await navigator.clipboard.writeText(code); toast('Setup code copied'); }
-  catch { $('#setup-code').value = code; $('#setup-code').select(); toast('Copy the code from the box'); }
-};
-$('#apply-setup').onclick = () => {
-  try {
-    applySetupCode($('#setup-code').value);
-    const f = $('#settings-form');
-    for (const k of ['owner', 'repo', 'branch', 'ghToken', 'geminiKey', 'model']) f[k].value = settings[k] || '';
-    $('#setup-code').value = '';
-    toast('Setup code applied');
-    load();
-  } catch { toast('That setup code isn’t valid.'); }
-};
-$('#reload-data').onclick = () => { load(); toast('Reloading…', null, 1500); };
+$('#import-json').onclick = () => { if (store.user) pickImport(); else toast('Sign in first.'); };
 $('#export-md').onclick = () => download(`eevee-figure-collection-${today()}.md`, exportMarkdown(col()), 'text/markdown');
 $('#export-json').onclick = () => download(`eevee-collection-${today()}.json`, JSON.stringify(col(), null, 2), 'application/json');
 
@@ -827,13 +862,14 @@ $('#btn-ask').onclick = () => openAgent();
 $('#btn-settings').onclick = openSettings;
 $('#sync').onclick = () => {
   const s = store.status;
-  if (!gh.canWrite) openSettings();
-  else if (s.pending) flush();
-  else { load(); toast('Refreshing…', null, 1500); }
+  if (!store.user) { $('[data-act="signin"]')?.focus(); return; }
+  if (s.offline) toast(s.pending ? `${s.pending} change(s) saved on this device. They’ll sync when you’re online.` : 'Offline: showing your saved copy.');
+  else if (s.error) toast(s.error);
+  else toast(s.pending ? 'Syncing…' : 'Everything is synced.', null, 2000);
 };
 $('#banner').addEventListener('click', (e) => {
   const b = e.target.closest('button');
-  if (b?.dataset.act === 'retry') flush();
+  if (b?.dataset.act === 'retry') location.reload();
   if (b?.dataset.act === 'ios-tip-ok') { saveSettings({ iosTipSeen: true }); renderSync(); }
 });
 
@@ -841,6 +877,9 @@ $('#list').addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   const act = b.dataset.act;
+  if (act === 'signin') { signIn().catch((err) => toast(describe(err), null, 8000)); return; }
+  if (act === 'import') { pickImport(); return; }
+  if (act === 'skip-import') { skipImport = true; render(); return; }
   if (act === 'ask-search') { openAgent({ text: ui.q ? `check for ${ui.q}` : '' }); return; }
   if (act === 'new-note') { openNoteForm(); return; }
   if (act === 'note-ai-all') { processAllNotes(); return; }
@@ -867,11 +906,16 @@ $('#list').addEventListener('click', (e) => {
   else if (act === 'verify') openAgent({ text: `Is “${it.name}”${it.brand ? ` by ${it.brand}` : ''} a real Eevee product? Verify the exact name.`, autoSend: true, verifyId: it.id });
 });
 
-store.addEventListener('change', render);
-store.addEventListener('status', renderSync);
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && Date.now() - store.status.loadedAt > 120000 && !store.status.pending) load();
+$('#list').addEventListener('submit', async (e) => {
+  if (e.target.id !== 'pw-signin') return;
+  e.preventDefault();
+  const f = e.target;
+  try { await signInWithPassword(f.email.value.trim(), f.password.value); }
+  catch (err) { toast(describe(err), null, 8000); }
 });
+
+store.addEventListener('change', render);
+store.addEventListener('status', () => { renderSync(); if (gateHtml() || document.body.classList.contains('gated')) render(); });
 
 render();
 renderSync();

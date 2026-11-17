@@ -164,38 +164,25 @@
     <form id="settings-form" novalidate>
       <header><h2>Settings</h2><button type="button" class="icon-btn" data-close aria-label="Close">✕</button></header>
       <div class="body">
-        <p class="hint">Keys are stored only on this device. On iPhone, the home-screen app keeps its own storage, separate from Safari, so enter them inside the installed app (or paste a setup code).</p>
-
-        <h3>GitHub (saving)</h3>
-        <div class="grid2">
-          <label>Owner<input name="owner" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
-          <label>Repo<input name="repo" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+        <h3>Account</h3>
+        <div class="row wrap"><span id="account-email" class="grow"></span><button type="button" class="btn small" id="sign-out">Sign out</button></div>
+        <div id="account-box" class="field">
+          <label><span id="pw-label">Set an app password</span><input name="newPassword" type="password" autocomplete="new-password" minlength="6" placeholder="at least 6 characters"></label>
+          <div class="row"><button type="button" class="btn small" id="set-pw">Save password</button><span class="hint" id="pw-out"></span></div>
+          <p class="hint">Optional. Lets you sign in with your email and this password where Google sign-in won’t open, like the iPhone home-screen app. Same account, same list.</p>
         </div>
-        <div class="grid2">
-          <label>Branch<input name="branch" autocomplete="off" autocapitalize="off"></label>
-          <label>Token<input name="ghToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
-        </div>
-        <div class="row"><button type="button" class="btn small" id="test-gh">Test GitHub</button><span class="hint" id="test-gh-out"></span></div>
 
         <h3>Gemini (assistant)</h3>
         <label>API key<input name="geminiKey" type="password" autocomplete="off" placeholder="from aistudio.google.com"></label>
         <label>Model<input name="model" list="models" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
         <datalist id="models"></datalist>
-        <p class="hint">Free Google Search grounding currently works on <code>gemini-2.5-flash-lite</code> (500 searches/day). Newer models may need a paid plan for search.</p>
+        <p class="hint">Saved to your account, so your other devices get it when you sign in. Free Google Search grounding currently works on <code>gemini-2.5-flash-lite</code> (500 searches/day).</p>
         <div class="row"><button type="button" class="btn small" id="load-models">Load models</button><span class="hint" id="models-out"></span></div>
-
-        <h3>Move keys to another device</h3>
-        <div class="row">
-          <button type="button" class="btn small" id="copy-setup">Copy setup code</button>
-          <span class="hint">Contains your keys. Only paste it on your own devices.</span>
-        </div>
-        <label>Paste setup code<textarea id="setup-code" rows="2" placeholder="EEVEE1.…"></textarea></label>
-        <div class="row"><button type="button" class="btn small" id="apply-setup">Apply code</button></div>
 
         <h3>App</h3>
         <div class="row wrap">
           <button type="button" class="btn small" id="install-app" hidden>Install app</button>
-          <button type="button" class="btn small" id="reload-data">Reload from GitHub</button>
+          <button type="button" class="btn small" id="import-json">Import JSON</button>
           <button type="button" class="btn small" id="export-md">Export Markdown</button>
           <button type="button" class="btn small" id="export-json">Export JSON</button>
         </div>
